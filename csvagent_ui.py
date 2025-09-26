@@ -230,8 +230,11 @@ Response format:
                 'columns': cols.tolist()
             }
         
+        # Convert data types to strings for JSON serialization
+        type_counts_dict = {str(k): v for k, v in type_counts.to_dict().items()}
+        
         return {
-            'type_counts': type_counts.to_dict(),
+            'type_counts': type_counts_dict,
             'type_info': type_info
         }
 
@@ -425,7 +428,7 @@ def main():
                     if len(missing_df) > 0:
                         fig = px.bar(missing_df, x='Column', y='Missing Count', 
                                    title="Missing Values by Column")
-                        fig.update_xaxis(tickangle=45)
+                        fig.update_layout(xaxis_tickangle=45)
                         st.plotly_chart(fig, use_container_width=True)
         
         with tab2:
@@ -564,7 +567,10 @@ def main():
                     st.dataframe(type_df, use_container_width=True)
                 
                 with col2:
-                    fig = px.pie(type_df, values='Count', names='Data Type', 
+                    # Convert data types to strings for JSON serialization
+                    type_df_clean = type_df.copy()
+                    type_df_clean['Data Type'] = type_df_clean['Data Type'].astype(str)
+                    fig = px.pie(type_df_clean, values='Count', names='Data Type', 
                                title="Data Type Distribution")
                     st.plotly_chart(fig, use_container_width=True)
                 

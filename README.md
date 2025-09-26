@@ -1,240 +1,243 @@
-# CSV Agent - AI-Powered Data Analysis Tool
+# 🤖 CSV Agent: AI-Powered Data Analysis with Ollama
 
-A powerful Streamlit-based web application that uses AI (Ollama) to analyze CSV data through natural language queries. This tool provides comprehensive data analysis capabilities with an intuitive interface.
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io)
+[![Ollama](https://img.shields.io/badge/Ollama-LLM-green.svg)](https://ollama.ai)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## 🚀 Features
+A powerful, AI-driven CSV data analysis tool that leverages Ollama's local language models to provide natural language data exploration and analysis capabilities. Perfect for data scientists, analysts, and anyone who wants to interact with their data using conversational AI.
 
-### Core Functionality
+## 🌟 Key Features
 
-- **AI-Powered Analysis**: Uses Ollama models to understand natural language queries about your data
-- **CSV Upload & Management**: Upload CSV files or select from existing datasets
-- **Interactive Data Exploration**: Browse and preview your data with an intuitive interface
-- **Real-time Data Quality Metrics**: Get instant insights about data completeness and quality
-
-### Advanced Analytics
-
-- **Statistical Analysis**: Comprehensive statistical summaries including mean, median, standard deviation, skewness, and kurtosis
-- **Correlation Analysis**: Visualize relationships between numeric variables with heatmaps
-- **Outlier Detection**: Identify outliers using IQR and Z-score methods
-- **Data Type Analysis**: Understand your data structure and column types
-- **Missing Value Analysis**: Detailed breakdown of missing data patterns
-
-### AI Capabilities
+### 🧠 AI-Powered Analysis
 
 - **Natural Language Queries**: Ask questions about your data in plain English
-- **Intelligent Column Selection**: AI automatically identifies relevant columns based on your query
+- **Intelligent Column Selection**: AI automatically identifies relevant columns
 - **Smart Data Filtering**: Extract specific data subsets based on your requirements
 - **Automated Visualizations**: Generate charts and graphs based on your data
 
-## 🛠️ Installation
+### 📊 Comprehensive Data Analysis
+
+- **Statistical Analysis**: Mean, median, standard deviation, skewness, kurtosis
+- **Correlation Analysis**: Interactive heatmaps and relationship insights
+- **Outlier Detection**: IQR and Z-score methods with visualizations
+- **Data Quality Metrics**: Missing values, duplicates, memory usage analysis
+- **Data Type Analysis**: Comprehensive type distribution and categorization
+
+### 🎨 Interactive Visualizations
+
+- **Plotly Integration**: Interactive charts with zoom, pan, and hover capabilities
+- **Multiple Chart Types**: Histograms, box plots, scatter plots, bar charts, heatmaps
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Export Capabilities**: Download filtered data and visualizations
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
 - Python 3.8 or higher
 - Ollama installed and running
 
-### Setup Ollama
+### Installation
 
-1. Install Ollama from [ollama.ai](https://ollama.ai)
-2. Start Ollama service:
+1. **Clone the repository**
+
    ```bash
-   ollama serve
+   git clone https://github.com/yourusername/csv-agent.git
+   cd csv-agent
    ```
-3. Pull a model (e.g., Llama 3.2):
+
+2. **Install dependencies**
+
    ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Setup Ollama**
+
+   ```bash
+   # Install Ollama from https://ollama.ai
+   ollama serve
    ollama pull llama3.2
    ```
 
-### Install Dependencies
+4. **Run the application**
 
-```bash
-pip install -r requirements.txt
+   ```bash
+   streamlit run src/csvagent_ui.py
+   ```
+
+5. **Open your browser**
+   Navigate to `http://localhost:8501`
+
+## 📁 Project Structure
+
 ```
-
-### Required Packages
-
+csv-agent/
+├── README.md                 # This file
+├── LICENSE                   # MIT License
+├── requirements.txt          # Python dependencies
+├── .gitignore               # Git ignore rules
+├── .env.example             # Environment variables template
+├── config/
+│   ├── __init__.py
+│   ├── settings.py          # Configuration settings
+│   └── models.py            # Data models
+├── src/
+│   ├── __init__.py
+│   ├── csvagent_ui.py       # Main Streamlit application
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── agent.py         # Core CSV Agent class
+│   │   ├── analyzer.py      # Data analysis functions
+│   │   └── visualizer.py    # Visualization functions
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── data_loader.py   # Data loading utilities
+│   │   └── helpers.py       # Helper functions
+│   └── api/
+│       ├── __init__.py
+│       └── ollama_client.py # Ollama API client
+├── examples/
+│   ├── sample_data/         # Sample CSV files
+│   ├── notebooks/           # Jupyter notebooks
+│   └── use_cases/           # Example use cases
+├── tests/
+│   ├── __init__.py
+│   ├── test_agent.py
+│   └── test_analyzer.py
+├── docs/
+│   ├── installation.md
+│   ├── usage.md
+│   └── api_reference.md
+└── scripts/
+    ├── setup.sh             # Setup script
+    └── run_demo.py          # Demo script
 ```
-streamlit
-pandas
-requests
-plotly
-numpy
-scipy
-seaborn
-matplotlib
-```
-
-## 🚀 Usage
-
-### Starting the Application
-
-```bash
-streamlit run csvagent_ui.py
-```
-
-The application will open in your browser at `http://localhost:8501`
-
-### Basic Workflow
-
-1. **Connect to Ollama**: Click "Check Ollama Status" in the sidebar
-2. **Select Model**: Choose your preferred Ollama model
-3. **Upload CSV**: Either upload a file or select from existing datasets
-4. **Analyze Data**: Use the statistical analysis tabs for comprehensive insights
-5. **Ask AI**: Enter natural language queries to get AI-powered analysis
-
-### Example Queries
-
-- "Show me the name and age columns"
-- "Get all columns related to sales data"
-- "Extract the date and amount columns"
-- "Find columns with financial information"
-- "Show me customer data columns"
-
-## 📊 Features Overview
-
-### Data Quality Panel
-
-- Total rows and columns count
-- Missing values analysis with percentages
-- Duplicate rows detection
-- Memory usage statistics
-- Missing values visualization by column
-
-### Statistical Analysis
-
-- Comprehensive statistical summaries
-- Distribution plots (histograms, box plots)
-- Column selection for targeted analysis
-- Real-time statistical calculations
-
-### Correlation Analysis
-
-- Correlation matrix visualization
-- Interactive heatmaps
-- Strong correlation identification (|r| > 0.7)
-- Relationship insights between variables
-
-### Outlier Detection
-
-- IQR and Z-score methods
-- Outlier count and percentage
-- Visual outlier identification
-- Scatter plot analysis for context
-
-### Data Types Analysis
-
-- Data type distribution
-- Column categorization by type
-- Detailed type information
-- Visual type distribution charts
 
 ## 🎯 Use Cases
 
 ### Business Intelligence
 
-- Sales data analysis
-- Customer segmentation
-- Performance metrics evaluation
-- Market research insights
+- **Sales Analysis**: Analyze sales data, identify trends, and generate insights
+- **Customer Segmentation**: Group customers based on behavior and demographics
+- **Performance Metrics**: Track KPIs and business performance indicators
+- **Market Research**: Analyze survey data and market trends
 
 ### Data Science
 
-- Exploratory data analysis (EDA)
-- Data quality assessment
-- Feature engineering insights
-- Model preparation
+- **Exploratory Data Analysis (EDA)**: Comprehensive data exploration and profiling
+- **Data Quality Assessment**: Identify data issues and quality problems
+- **Feature Engineering**: Discover relationships and create new features
+- **Model Preparation**: Prepare data for machine learning models
 
 ### Research & Analytics
 
-- Survey data analysis
-- Statistical research
-- Academic data exploration
-- Report generation
+- **Academic Research**: Analyze research data and generate statistical insights
+- **Survey Analysis**: Process and analyze survey responses
+- **Statistical Analysis**: Perform comprehensive statistical tests
+- **Report Generation**: Create automated reports and visualizations
 
 ## 🔧 Configuration
 
-### Ollama Settings
+### Environment Variables
 
-- Default URL: `http://localhost:11434`
-- Default model: `llama3.2`
-- Configurable model selection
-- Connection status monitoring
+Create a `.env` file based on `.env.example`:
 
-### Quick CSV Access
+```bash
+OLLAMA_URL=http://localhost:11434
+DEFAULT_MODEL=llama3.2
+MAX_FILE_SIZE=100MB
+ENABLE_CACHING=true
+```
 
-Pre-configured access to common datasets:
+### Model Configuration
 
-- Kaggle competition data
-- S&P 500 data
-- Sample datasets
+The application supports various Ollama models:
 
-## 📈 Data Visualization
+- `llama3.2` (recommended)
+- `llama3.1`
+- `codellama`
+- `mistral`
+- `phi3`
 
-### Supported Chart Types
+## 📊 Example Queries
 
-- **Histograms**: Distribution analysis
-- **Box Plots**: Outlier identification
-- **Scatter Plots**: Relationship analysis
-- **Bar Charts**: Categorical data visualization
-- **Heatmaps**: Correlation matrices
-- **Pie Charts**: Data type distribution
+Try these natural language queries with your data:
 
-### Interactive Features
+```
+"Show me the name and age columns"
+"Get all columns related to sales data"
+"Extract the date and amount columns"
+"Find columns with financial information"
+"Show me customer data columns"
+"Analyze the relationship between price and sales"
+"Identify outliers in the revenue column"
+"Create a correlation matrix for numeric columns"
+```
 
-- Zoom and pan capabilities
-- Hover information
-- Responsive design
-- Export capabilities
+## 🛠️ Development
 
-## 🚨 Troubleshooting
+### Running Tests
 
-### Common Issues
+```bash
+pytest tests/
+```
 
-**Ollama Connection Failed**
+### Code Formatting
 
-- Ensure Ollama is running: `ollama serve`
-- Check if Ollama is accessible at `http://localhost:11434`
-- Verify model is installed: `ollama list`
+```bash
+black src/
+isort src/
+```
 
-**CSV Upload Issues**
+### Type Checking
 
-- Check file format (must be CSV)
-- Ensure file is not corrupted
-- Verify file size limits
-
-**Memory Issues**
-
-- Large datasets may require more RAM
-- Consider data sampling for very large files
-- Monitor memory usage in the metrics panel
+```bash
+mypy src/
+```
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-### Development Setup
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📝 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- [Streamlit](https://streamlit.io) for the web framework
-- [Ollama](https://ollama.ai) for AI capabilities
+- [Streamlit](https://streamlit.io) for the amazing web framework
+- [Ollama](https://ollama.ai) for local AI capabilities
 - [Plotly](https://plotly.com) for interactive visualizations
 - [Pandas](https://pandas.pydata.org) for data manipulation
+- [NumPy](https://numpy.org) for numerical computing
+- [SciPy](https://scipy.org) for scientific computing
 
 ## 📞 Support
 
-For support, please open an issue in the repository or contact the development team.
+- 📧 Email: support@csvagent.com
+- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/csv-agent/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/yourusername/csv-agent/discussions)
+
+## 📈 Roadmap
+
+- [ ] Support for more data formats (Excel, JSON, Parquet)
+- [ ] Advanced AI models integration (GPT-4, Claude)
+- [ ] Real-time data streaming capabilities
+- [ ] Collaborative analysis features
+- [ ] API endpoints for programmatic access
+- [ ] Docker containerization
+- [ ] Cloud deployment options
 
 ---
 
-**Happy Analyzing! 🎉**
+**Made with ❤️ for the data science community**
+
+_Happy Analyzing! 🎉_
