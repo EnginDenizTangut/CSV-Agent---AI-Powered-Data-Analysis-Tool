@@ -1,5 +1,8 @@
 from cmd import PROMPT
+import select
 import stat
+
+from numpy._core import numeric
 import streamlit as st
 import pandas as pd
 import requests
@@ -102,7 +105,7 @@ Format your response in a clear, structured way.
 
         response = self.ask_ollama(prompt)
         return response
-
+        
 
     
     def analyze_columns(self, english_prompt: str) -> Dict[str, Any]:
@@ -159,13 +162,13 @@ Response format:
         if not response:
             return []
         
-        available_columns = list(self.df.columns)
+        column_descriptions = self.get_column_descriptions()
         found_columns = []
-        
-        for column in available_columns:
-            if column.lower() in response.lower():
-                found_columns.append(column)
-        
+
+        for col,description in column_descriptions.items():
+            if any(word.lower() in description.lower() for word in response.lower().split()):
+                found_columns.append(col)
+
         return found_columns
     
     def get_data_quality_metrics(self) -> Dict[str, Any]:
@@ -277,6 +280,66 @@ Response format:
             'type_counts': type_counts_dict,
             'type_info': type_info
         }
+
+    #TODO kolon aciklamalarini alma
+    def get_column_descriptions(self) -> Dict[str,str]:
+        if self.df is None:
+            return {}
+        
+        descriptions = {}
+        for col in self.df.columns:
+            prompt = f"""
+            Column name: {col}
+            Sample values: {self.df[col].head(3).tolist()}
+
+            Please provide:
+            1. What this column represents
+            2. Alternative names/synonms
+            3. Data type description
+
+            Format: "column_name, description, synonyms"
+            """
+
+            response = self.ask_ollama(prompt)
+            descriptions[col] = response
+    
+        return descriptions
+    
+    #TODO akilli grafik secimi
+    def smart_chart_selection(self,user_query:str, selected_columns: List[str]) -> str:
+        if not selected_columns:
+            return "no_chart"
+        
+        numeric_cols = []
+        categorical_cols = []
+
+        for col in selected_columns:
+            if col in self.df.columns:
+                if self.df[col].dtype in ['int64','float64']:
+                    numeric_cols.append(col)
+                else:
+                    categorical_cols.append(col)
+
+        query_lower = user_query.lower()
+
+        if len(numeric_cols) >= 2 and any(word in query_lower for word in ['ilişki', 'relationship', 'korelasyon', 'correlation']):
+            return "scatter_plot"
+        elif len(numeric_cols) >= 1 and any(word in query_lower for word in ['dağılım', 'distribution', 'histogram']):
+            return "histogram"
+        elif len(categorical_cols) >= 1 and any(word in query_lower for word in ['sayı', 'count', 'bar', 'sütun']):
+            return "bar_chart"
+        elif len(numeric_cols) >= 1 and any(word in query_lower for word in ['box', 'kutu', 'outlier']):
+            return "box_plot"
+        else:
+            if len(numeric_cols) >= 2:
+                return "scatter_plot"
+            elif len(numeric_cols) >= 1:
+                return "histogram"
+            elif len(categorical_cols) >= 1:
+                return "bar_chart"
+            else:
+                return "no_chart"
+
 
 def main():
     st.set_page_config(
@@ -688,7 +751,32 @@ def main():
                     if not result['data'].empty:
                         st.subheader("📊 Filtered Data")
                         st.dataframe(result['data'], use_container_width=True)
+                        chart_type = st.session_state.agent.smart_chart_selection(prompt,result['columns'])
+
+                        if chart_type == "scatter_plot" and len(numeric_cols) >= 2:
+                            x_col = st.selectbox("X-axis:", numeric_cols)
+                            y_col = st.selectbox("Y-axis:", numeric_cols)
+                            fig = px.scatter(result['data'], x=x_col, y=y_col, title=f"{x_col} vs {y_col}")
+                            st.plotly_chart(fig, use_container_width=True, key="auto_scatter_plot")
+                            
+                        elif chart_type == "histogram" and len(numeric_cols) >= 1:
+                            hist_col = st.selectbox("Histogram column:", numeric_cols)
+                            fig = px.histogram(result['data'], x=hist_col, title=f"Distribution of {hist_col}")
+                            st.plotly_chart(fig, use_container_width=True, key="auto_histogram")
                         
+                        elif chart_type == "bar_chart" and len(categorical_cols) >= 1:
+                            cat_col = st.selectbox("Bar chart column:", categorical_cols)
+                            value_counts = result['data'][cat_col].value_counts().head(10)
+                            fig = px.bar(x=value_counts.index, y=value_counts.values, title=f"Top 10 values in {cat_col}")
+                            st.plotly_chart(fig, use_container_width=True, key="auto_bar_chart")
+                        
+                        elif chart_type == "box_plot" and len(numeric_cols) >= 1:
+                            box_col = st.selectbox("Box plot column:", numeric_cols)
+                            fig = px.box(result['data'], y=box_col, title=f"Box Plot of {box_col}")
+                            st.plotly_chart(fig, use_container_width=True, key="auto_box_plot")
+
+
+                            #TODO devam edilecek
                         # Data visualization
                         if len(result['data'].columns) >= 2:
                             st.subheader("📈 Data Visualization")
