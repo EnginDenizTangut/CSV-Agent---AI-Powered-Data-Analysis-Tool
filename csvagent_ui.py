@@ -1,3 +1,5 @@
+from cmd import PROMPT
+import stat
 import streamlit as st
 import pandas as pd
 import requests
@@ -64,6 +66,44 @@ class CSVAgent:
         except Exception as e:
             st.error(f"Ollama ile iletişim hatası: {e}")
             return ""
+    
+    def generate_ai_summary(self) -> str:
+        if self.df is None:
+            return "No data loaded"
+        
+        rows = len(self.df)
+        columns = len(self.df.columns)
+
+        quality_metrics = self.get_data_quality_metrics()
+        stats_summary = self.get_statistical_summary()
+
+        prompt = f"""
+You are a data analyst. Analyze this dataset and provide insights:
+
+Dataset Info:
+- Rows: {rows}
+- Columns: {columns}
+- Missing values: {quality_metrics.get('missing_percentage', 0):.2f}%
+
+Column Types:
+{self.df.dtypes.to_string()}
+
+Statistical Summary:
+{stats_summary.to_string() if not stats_summary.empty else 'No numeric columns'}
+
+Please provide:
+1. Key insights about the data
+2. Data quality assessment
+3. Interesting patterns or trends
+4. Recommendations for further analysis
+
+Format your response in a clear, structured way.
+"""
+
+        response = self.ask_ollama(prompt)
+        return response
+
+
     
     def analyze_columns(self, english_prompt: str) -> Dict[str, Any]:
         if self.df is None:
@@ -373,6 +413,17 @@ def main():
         st.subheader("📋 Data Preview")
         st.dataframe(df.head(10), use_container_width=True)
         
+        st.subheader("🤖 AI Data Summary")
+        col1,col2 = st.columns([3,1])
+        with col1:
+            st.markdown("Get AI-Powered insights about your data")
+        with col2:
+            if st.button("Generate AI Summary",type="primary"):
+                with st.spinner("AI is analyzing your data..."):
+                    summary = st.session_state.agent.generate_ai_summary()
+                    st.markdown("### AI Analysis Results")
+                    st.markdown(summary)
+                    
         # Statistical Analysis Panel
         st.subheader("📊 Statistical Analysis Panel")
         
@@ -429,7 +480,7 @@ def main():
                         fig = px.bar(missing_df, x='Column', y='Missing Count', 
                                    title="Missing Values by Column")
                         fig.update_layout(xaxis_tickangle=45)
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="missing_values_chart")
         
         with tab2:
             st.markdown("### 📊 Statistical Summary")
@@ -456,14 +507,14 @@ def main():
                             # Histogram
                             fig = px.histogram(df, x=selected_cols[0], 
                                              title=f"Distribution of {selected_cols[0]}")
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, use_container_width=True, key="distribution_histogram")
                         
                         with col2:
                             if len(selected_cols) > 1:
                                 # Box plot
                                 fig = px.box(df, y=selected_cols[1], 
                                            title=f"Box Plot of {selected_cols[1]}")
-                                st.plotly_chart(fig, use_container_width=True)
+                                st.plotly_chart(fig, use_container_width=True, key="box_plot")
             else:
                 st.info("No numeric columns found for statistical analysis.")
         
@@ -480,7 +531,7 @@ def main():
                               text_auto=True, 
                               aspect="auto",
                               title="Correlation Heatmap")
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="correlation_heatmap")
                 
                 # Strong correlations
                 st.markdown("#### 🔥 Strong Correlations (|r| > 0.7)")
@@ -529,7 +580,7 @@ def main():
                             
                             # Box plot
                             fig = px.box(df, y=selected_col, title=f"Box Plot - {selected_col}")
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, use_container_width=True, key="outlier_box_plot")
                             
                             # Scatter plot if we have another numeric column
                             other_numeric = [col for col in numeric_cols if col != selected_col]
@@ -537,7 +588,7 @@ def main():
                                 x_col = st.selectbox("X-axis for scatter plot:", other_numeric)
                                 fig = px.scatter(df, x=x_col, y=selected_col, 
                                                title=f"{x_col} vs {selected_col}")
-                                st.plotly_chart(fig, use_container_width=True)
+                                st.plotly_chart(fig, use_container_width=True, key="outlier_scatter_plot")
                             
                             # Outlier values
                             st.markdown("#### 🔍 Outlier Values")
@@ -572,7 +623,7 @@ def main():
                     type_df_clean['Data Type'] = type_df_clean['Data Type'].astype(str)
                     fig = px.pie(type_df_clean, values='Count', names='Data Type', 
                                title="Data Type Distribution")
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key="data_type_pie_chart")
                 
                 # Detailed type information
                 st.markdown("#### 📋 Detailed Type Information")
@@ -655,14 +706,14 @@ def main():
                                         x_col = st.selectbox("X-axis:", numeric_cols)
                                         y_col = st.selectbox("Y-axis:", numeric_cols)
                                         fig = px.scatter(result['data'], x=x_col, y=y_col, title=f"{x_col} vs {y_col}")
-                                        st.plotly_chart(fig, use_container_width=True)
+                                        st.plotly_chart(fig, use_container_width=True, key="ai_scatter_plot")
                                 
                                 with viz_col2:
                                     if len(numeric_cols) >= 1:
                                         # Histogram
                                         hist_col = st.selectbox("Histogram column:", numeric_cols)
                                         fig = px.histogram(result['data'], x=hist_col, title=f"Distribution of {hist_col}")
-                                        st.plotly_chart(fig, use_container_width=True)
+                                        st.plotly_chart(fig, use_container_width=True, key="ai_histogram")
                             
                             # Categorical data visualization
                             if len(categorical_cols) >= 1:
@@ -670,7 +721,7 @@ def main():
                                 value_counts = result['data'][cat_col].value_counts().head(10)
                                 fig = px.bar(x=value_counts.index, y=value_counts.values, 
                                            title=f"Top 10 values in {cat_col}")
-                                st.plotly_chart(fig, use_container_width=True)
+                                st.plotly_chart(fig, use_container_width=True, key="ai_bar_chart")
                         
                         # Download button
                         csv_buffer = io.StringIO()
